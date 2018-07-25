@@ -13,6 +13,22 @@ use Illuminate\Http\Request;
 |
 */
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
+Route::group(['prefix' => '/v1', 'namespace' => 'Api\V1', 'as' => 'api.'], function () {
+	Route::post('auth/register', 'AuthController@register');
+	Route::post('auth/login', 'AuthController@login');
+	Route::group(['middleware' => 'jwt.auth'], function(){
+		Route::get('auth/user', 'AuthController@user');
+		Route::post('auth/logout', 'AuthController@logout');
+	});
+	Route::group(['middleware' => 'jwt.refresh'], function(){
+	  	Route::get('auth/refresh', 'AuthController@refresh');
+	});
+	Route::group(['middleware' => 'jwt.auth'], function(){
+		Route::get('tasks', 'TaskController@getAllTasks');
+		Route::post('task/store', 'TaskController@store');
+		Route::delete('tasks', 'TaskController@deleteAll');
+	});
+    Route::patch('task/{id}', 'TaskController@update');
+    Route::delete('task/{id}', 'TaskController@destroy');
 });
+
